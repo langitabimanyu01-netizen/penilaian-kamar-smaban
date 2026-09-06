@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asramaku - Rekap Nilai Kebersihan Kamar SMA Banua</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            950: '#022c22',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+        /* Hide spin buttons for number inputs */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen pb-16 flex flex-col">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header Area -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-30 shadow-sm backdrop-blur-md bg-white/90 dark:bg-slate-900/90">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+            <!-- App Brand & Simple Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 shrink-0">
+                    <i class="fas fa-building-user text-lg sm:text-xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-display font-black text-lg sm:text-2xl text-slate-900 dark:text-white tracking-tight leading-none">Asramaku</h1>
+                        <span class="text-[10px] uppercase font-extrabold px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-200 dark:border-emerald-800">
+                            SMA Banua
+                        </span>
+                    </div>
+                    <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">Sistem Rekap & Evaluasi Kebersihan Kamar</p>
+                </div>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" class="p-2 sm:px-3 sm:py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center gap-2 text-xs font-semibold" title="Beralih Mode Gelap/Terang">
+                    <i id="theme-icon" class="fas fa-moon text-amber-500"></i>
+                    <span id="theme-text" class="hidden sm:inline">Mode Gelap</span>
+                </button>
+
+                <!-- Rubric Info Modal Trigger -->
+                <button onclick="toggleModal('rubric-modal', true)" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition text-xs font-semibold flex items-center gap-1.5">
+                    <i class="fas fa-circle-info text-sm"></i>
+                    <span class="hidden sm:inline">Kriteria Penilaian</span>
+                </button>
+
+                <!-- Admin Status Indicator / Logout -->
+                <div id="admin-status-badge" class="hidden items-center gap-2">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
+                        <i class="fas fa-user-shield text-[10px]"></i> Pengurus
+                    </span>
+                    <button onclick="handleLogout()" class="p-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-xl transition" title="Logout Pengurus">
+                        <i class="fas fa-sign-out-alt text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex-1 w-full space-y-6">
+
+        <!-- Tab Selector Bar -->
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+            <div class="flex items-center gap-2 bg-slate-200/60 dark:bg-slate-800/60 p-1 rounded-2xl">
+                <button id="tab-btn-rekap" onclick="switchTab('rekap')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 shadow-sm bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400">
+                    <i class="fas fa-clipboard-list mr-1.5"></i> Rekap Harian
+                </button>
+                <button id="tab-btn-leaderboard" onclick="switchTab('leaderboard')" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <i class="fas fa-trophy mr-1.5 text-amber-500"></i> Papan Peringkat
+                </button>
+            </div>
+
+            <!-- Global Status Indicator -->
+            <div id="status-indicator" class="text-xs font-medium text-slate-500 dark:text-slate-400 hidden sm:flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="save-status-text">Mode Pengamat (Read-only)</span>
+            </div>
+        </div>
+
+        <!-- ================= TAB 1: REKAP HARIAN ================= -->
+        <div id="tab-content-rekap" class="space-y-6">
+            
+            <!-- Filter & Parameter Selection Card -->
+            <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-2">
+                        <i class="fas fa-sliders text-emerald-500"></i> Parameter Data Kebersihan
+                    </h2>
+                    <span id="active-mode-tag" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        Mode Pengamat
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    <!-- Tahun Ajaran -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Tahun Ajaran</label>
+                        <select id="filter-academic-year" onchange="handleFilterChange()" class="w-full p-2 text-xs sm:text-sm font-semibold border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="2026/2027" selected>2026/2027</option>
+                            <option value="2027/2028">2027/2028</option>
+                        </select>
+                    </div>
+
+                    <!-- Semester -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Semester</label>
+                        <select id="filter-semester" onchange="handleFilterChange()" class="w-full p-2 text-xs sm:text-sm font-semibold border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="ganjil" selected>Ganjil</option>
+                            <option value="genap">Genap</option>
+                        </select>
+                    </div>
+
+                    <!-- Bulan -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Bulan</label>
+                        <select id="filter-month" onchange="handleFilterChange()" class="w-full p-2 text-xs sm:text-sm font-semibold border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <!-- Minggu Ke- -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Minggu</label>
+                        <select id="filter-week" onchange="handleFilterChange()" class="w-full p-2 text-xs sm:text-sm font-semibold border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="1">Minggu 1</option>
+                            <option value="2">Minggu 2</option>
+                            <option value="3">Minggu 3</option>
+                            <option value="4">Minggu 4</option>
+                            <option value="5">Minggu 5</option>
+                        </select>
+                    </div>
+
+                    <!-- Asrama -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Asrama</label>
+                        <select id="filter-dorm" onchange="handleFilterChange()" class="w-full p-2 text-xs sm:text-sm font-semibold border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="Asrama 1 Putra">Asrama 1 Putra</option>
+                            <option value="Asrama 1 Putri">Asrama 1 Putri</option>
+                            <option value="Asrama 2 Putra">Asrama 2 Putra</option>
+                            <option value="Asrama 2 Putri">Asrama 2 Putri</option>
+                        </select>
+                    </div>
+
+                    <!-- Nomor Kamar (Direct typing input) -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">Nomor Kamar</label>
+                        <input type="number" id="filter-room" min="1" max="20" value="1" oninput="validateRoomInput(this); handleFilterChange()" onblur="if(!this.value) this.value=1;" class="w-full p-2 text-xs sm:text-sm font-extrabold border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 dark:text-white text-center focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Score Input Table Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 overflow-hidden">
+                <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h3 id="table-title" class="font-display font-extrabold text-base sm:text-lg text-slate-800 dark:text-white flex items-center gap-2">
+                            Rekapitulasi Nilai Kamar
+                        </h3>
+                        <p id="table-subtitle" class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Rentang poin tiap aspek: 1 - 20 (Maksimal Total Harian: 100)</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <button id="btn-save-data" onclick="saveScoresToStorage()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition shadow-sm items-center gap-2">
+                            <i class="fas fa-floppy-disk"></i> Simpan Data
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Container -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                        <thead class="bg-slate-100/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 uppercase font-extrabold text-[11px] tracking-wider border-b border-slate-200 dark:border-slate-800">
+                            <tr>
+                                <th class="px-4 py-3.5 text-center w-28 sm:w-36">Hari / Tanggal</th>
+                                <th class="px-2 py-3.5 text-center min-w-[75px]">Kasur</th>
+                                <th class="px-2 py-3.5 text-center min-w-[75px]">Toilet</th>
+                                <th class="px-2 py-3.5 text-center min-w-[75px]">Lantai</th>
+                                <th class="px-2 py-3.5 text-center min-w-[75px]">Udara</th>
+                                <th class="px-2 py-3.5 text-center min-w-[75px]">Tata Letak</th>
+                                <th class="px-4 py-3.5 text-center bg-emerald-100/60 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 min-w-[90px]">Total Nilai</th>
+                                <th class="px-4 py-3.5 min-w-[200px]">Catatan Evaluation Pembina</th>
+                            </tr>
+                        </thead>
+                        <tbody id="score-table-body" class="divide-y divide-slate-200 dark:divide-slate-800">
+                            <!-- Populated dynamically via JavaScript -->
+                        </tbody>
+                        <tfoot class="bg-emerald-50 dark:bg-emerald-950/40 font-bold border-t-2 border-emerald-500/30">
+                            <tr>
+                                <td colspan="6" class="px-4 py-3.5 text-right text-xs uppercase font-black text-emerald-900 dark:text-emerald-200 tracking-wide">
+                                    <i class="fas fa-calculator mr-1.5 text-emerald-600 dark:text-emerald-400"></i> Rata-Rata Nilai Mingguan:
+                                </td>
+                                <td class="px-4 py-3.5 text-center">
+                                    <span id="weekly-average-score" class="inline-block px-3 py-1 bg-emerald-600 text-white rounded-xl text-base sm:text-lg font-black shadow-sm tracking-tight">0</span>
+                                </td>
+                                <td class="px-4 py-3.5">
+                                    <span id="weekly-predicate-text" class="inline-block px-3 py-1 rounded-xl text-xs font-black bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">Predikat: Belum Ada Data</span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Area Login Pengurus Asrama -->
+            <div id="login-section" class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 max-w-md mx-auto transition-all">
+                <div class="flex items-center justify-center gap-2 mb-3">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center">
+                        <i class="fas fa-user-shield text-base"></i>
+                    </div>
+                    <h3 class="text-base font-display font-bold text-slate-800 dark:text-white">Akses Pembina / Pengurus Asrama</h3>
+                </div>
+                
+                <div id="login-form" class="space-y-3">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 text-center mb-4">Silakan login untuk dapat memasukkan dan mengedit nilai rekapitulasi.</p>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Username Pengurus</label>
+                        <input type="text" id="username" class="w-full p-2.5 text-xs sm:text-sm border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-slate-50 dark:bg-slate-800 dark:text-white" placeholder="Masukkan username">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Password</label>
+                        <input type="password" id="password" onkeyup="if(event.key==='Enter') handleLogin()" class="w-full p-2.5 text-xs sm:text-sm border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-slate-50 dark:bg-slate-800 dark:text-white" placeholder="Masukkan password">
+                    </div>
+                    <button onclick="handleLogin()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition shadow-sm text-xs sm:text-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-in-alt"></i> Login Pengurus
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= TAB 2: PAPAN PERINGKAT (LEADERBOARD TOP 10) ================= -->
+        <div id="tab-content-leaderboard" class="space-y-6 hidden">
+            <!-- Filter Bar Leaderboard -->
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                        <i class="fas fa-trophy text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-display font-extrabold text-base text-slate-800 dark:text-white">Papan Peringkat Kamar Terbersih (Top 10)</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Peringkat berdasarkan kalkulasi akumulasi rata-rata nilai harian minggu terpilih</p>
+                    </div>
+                </div>
+
+                <!-- Leaderboard Mode Selector -->
+                <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                    <button id="btn-lb-dorm" onclick="setLeaderboardScope('dorm')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-sm">
+                        Per Asrama
+                    </button>
+                    <button id="btn-lb-school" onclick="setLeaderboardScope('school')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        Paralel Sekolah
+                    </button>
+                </div>
+            </div>
+
+            <!-- Top 3 Podium Graphic -->
+            <div id="podium-container" class="grid grid-cols-3 gap-2 sm:gap-4 max-w-2xl mx-auto pt-6 pb-2 items-end">
+                <!-- Rank 2 -->
+                <div id="podium-2" class="flex flex-col items-center">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-black flex items-center justify-center border-2 border-slate-300 dark:border-slate-600 text-sm shadow-md mb-2">
+                        🥈 2
+                    </div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-800 rounded-t-2xl p-3 text-center h-28 sm:h-36 flex flex-col justify-center border-t-4 border-slate-400">
+                        <p id="pod-room-2" class="font-display font-black text-xs sm:text-base text-slate-800 dark:text-white">Kamar -</p>
+                        <p id="pod-score-2" class="text-xs font-bold text-slate-500 dark:text-slate-400">0 Poin</p>
+                    </div>
+                </div>
+
+                <!-- Rank 1 (Center - Tallest) -->
+                <div id="podium-1" class="flex flex-col items-center -mt-4">
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-600 font-black flex items-center justify-center border-2 border-amber-400 text-base shadow-lg mb-2">
+                        🥇 1
+                    </div>
+                    <div class="w-full bg-gradient-to-b from-amber-500 to-amber-600 text-white rounded-t-2xl p-3 text-center h-36 sm:h-44 flex flex-col justify-center shadow-md">
+                        <p id="pod-room-1" class="font-display font-black text-sm sm:text-lg">Kamar -</p>
+                        <p id="pod-score-1" class="text-xs sm:text-sm font-extrabold text-amber-100">0 Poin</p>
+                    </div>
+                </div>
+
+                <!-- Rank 3 -->
+                <div id="podium-3" class="flex flex-col items-center">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-800/20 text-amber-800 dark:text-amber-500 font-black flex items-center justify-center border-2 border-amber-700 text-sm shadow-md mb-2">
+                        🥉 3
+                    </div>
+                    <div class="w-full bg-amber-100/80 dark:bg-slate-800/90 rounded-t-2xl p-3 text-center h-24 sm:h-28 flex flex-col justify-center border-t-4 border-amber-700">
+                        <p id="pod-room-3" class="font-display font-black text-xs sm:text-base text-slate-800 dark:text-white">Kamar -</p>
+                        <p id="pod-score-3" class="text-xs font-bold text-slate-500 dark:text-slate-400">0 Poin</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top 10 Table -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <table class="w-full text-left text-xs sm:text-sm">
+                    <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase font-extrabold text-[11px] tracking-wider border-b border-slate-200 dark:border-slate-800">
+                        <tr>
+                            <th class="px-4 py-3 text-center w-16">Peringkat</th>
+                            <th class="px-4 py-3">Nama Kamar</th>
+                            <th class="px-4 py-3">Lokasi Asrama</th>
+                            <th class="px-4 py-3 text-center">Rata-Rata Nilai</th>
+                            <th class="px-4 py-3 text-center">Status Kebersihan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-table-body" class="divide-y divide-slate-200 dark:divide-slate-800">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Kriteria Penilaian Rubrik -->
+    <div id="rubric-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3 class="font-display font-extrabold text-base sm:text-lg text-slate-800 dark:text-white">Rubrik & Panduan Kriteria Penilaian</h3>
+                </div>
+                <button onclick="toggleModal('rubric-modal', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg p-1">
+                    <i class="fas fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                <p>Penilaian dilakukan setiap hari kerja (Senin–Jumat) mencakup 5 aspek dengan skala poin <strong>1 sampai 20</strong> per aspek (Total harian maksimum 100):</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <h4 class="font-extrabold text-emerald-700 dark:text-emerald-400 mb-1"><i class="fas fa-bed mr-1"></i> 1. Kasur & Tempat Tidur</h4>
+                        <p class="text-xs">Kerapian sprei kencang, lipatan selimut rapi simetris, ketiadaan baju/barang menumpuk di atas kasur.</p>
+                    </div>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <h4 class="font-extrabold text-emerald-700 dark:text-emerald-400 mb-1"><i class="fas fa-toilet mr-1"></i> 2. Toilet & Kamar Mandi</h4>
+                        <p class="text-xs">Kebersihan bak air jernih, lantai tidak licin/berlumut, bebas sampah & aroma tidak sedap.</p>
+                    </div>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <h4 class="font-extrabold text-emerald-700 dark:text-emerald-400 mb-1"><i class="fas fa-broom mr-1"></i> 3. Kebersihan Lantai</h4>
+                        <p class="text-xs">Lantai disapu & dipel bersih, bebas dari debu, tanah, rambut, maupun sampah berserakan.</p>
+                    </div>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <h4 class="font-extrabold text-emerald-700 dark:text-emerald-400 mb-1"><i class="fas fa-wind mr-1"></i> 4. Udara & Ventilasi</h4>
+                        <p class="text-xs">Kesegaran udara kamar, sirkulasi lancar (jendela/ventilasi dibuka), serta tidak berbau apak.</p>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h4 class="font-extrabold text-emerald-700 dark:text-emerald-400 mb-1"><i class="fas fa-boxes-packing mr-1"></i> 5. Tata Letak & Kerapian</h4>
+                    <p class="text-xs">Penataan lemari tertutup rapi, sepatu tersusun simetris di rak, meja belajar bersih & barang tertata.</p>
+                </div>
+
+                <!-- Rentang Skor -->
+                <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
+                    <h4 class="font-bold text-slate-800 dark:text-white mb-2">Skala Interval Skor Per Aspek:</h4>
+                    <ul class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-semibold">
+                        <li class="p-2 bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 rounded-lg">1 - 5 Poin<br><span class="font-normal text-[10px]">Sangat Kurang</span></li>
+                        <li class="p-2 bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 rounded-lg">6 - 10 Poin<br><span class="font-normal text-[10px]">Kurang / Perlu Perbaikan</span></li>
+                        <li class="p-2 bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded-lg">11 - 15 Poin<br><span class="font-normal text-[10px]">Baik / Rapi</span></li>
+                        <li class="p-2 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded-lg">16 - 20 Poin<br><span class="font-normal text-[10px]">Sangat Baik / Sempurna</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pt-2 text-right">
+                <button onclick="toggleModal('rubric-modal', false)" class="bg-emerald-600 text-white font-bold px-5 py-2 rounded-xl text-xs hover:bg-emerald-700 transition">
+                    Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONSTANTS & STATE CONFIGURATION ---
+        // BARIS 337: TEMPAT PASTE LINK WEB APP GOOGLE APPS SCRIPT KAMU
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz3r1jIo_OWY6Wz2NFdnWa0pHn2TQiKGXomldTCeLLo29y0O9zyHAw9ITafMi_inagX/exec";
+
+        const aspects = ['kasur', 'toilet', 'lantai', 'udara', 'tata_letak'];
+        const monthNamesList = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const dayNamesList = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+        // Admin Credentials
+        const ADMIN_USER = "adminbanua";
+        const ADMIN_PASS = "BanuaAsrama2026!";
+
+        let isAdminLoggedIn = false;
+        let currentWorkweekDays = [];
+        let leaderboardScope = 'dorm'; // 'dorm' or 'school'
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            checkSessionLogin();
+            populateMonthDropdown();
+            renderTable();
+        });
+
+        // --- THEME MANAGEMENT ---
+        function initTheme() {
+            try {
+                const savedTheme = localStorage.getItem('asramaku_theme');
+                if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.remove('light');
+                    updateThemeUI(true);
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                    updateThemeUI(false);
+                }
+            } catch (e) {
+                console.log('Theme fallback used');
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            try {
+                localStorage.setItem('asramaku_theme', isDark ? 'dark' : 'light');
+            } catch (e) {}
+            updateThemeUI(isDark);
+        }
+
+        function updateThemeUI(isDark) {
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (isDark) {
+                icon.className = 'fas fa-sun text-amber-400';
+                text.innerText = 'Mode Terang';
+            } else {
+                icon.className = 'fas fa-moon text-slate-600';
+                text.innerText = 'Mode Gelap';
+            }
+        }
+
+        // --- AUTHENTICATION LOGIC ---
+        function checkSessionLogin() {
+            try {
+                if (sessionStorage.getItem('asramaku_admin') === 'true') {
+                    isAdminLoggedIn = true;
+                    updateLoginUI();
+                }
+            } catch (e) {}
+        }
+
+        function handleLogin() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            if (user === ADMIN_USER && pass === ADMIN_PASS) {
+                isAdminLoggedIn = true;
+                try {
+                    sessionStorage.setItem('asramaku_admin', 'true');
+                } catch (e) {}
+                updateLoginUI();
+                renderTable();
+                showToast('Login berhasil! Anda dapat menginput dan mengedit data.', 'success');
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            } else {
+                showToast('Username atau password salah!', 'error');
+            }
+        }
+
+        function handleLogout() {
+            isAdminLoggedIn = false;
+            try {
+                sessionStorage.removeItem('asramaku_admin');
+            } catch (e) {}
+            updateLoginUI();
+            renderTable();
+            showToast('Anda telah logout dari mode pengurus.', 'info');
+        }
+
+        function updateLoginUI() {
+            const statusTag = document.getElementById('active-mode-tag');
+            const badge = document.getElementById('admin-status-badge');
+            const saveBtn = document.getElementById('btn-save-data');
+            const loginSec = document.getElementById('login-section');
+            const saveText = document.getElementById('save-status-text');
+
+            if (isAdminLoggedIn) {
+                statusTag.innerText = 'Mode Pengurus (Edit Aktif)';
+                statusTag.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800';
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+                saveBtn.classList.remove('hidden');
+                saveBtn.classList.add('flex');
+                loginSec.classList.add('hidden');
+                saveText.innerText = 'Akses Edit Aktif';
+            } else {
+                statusTag.innerText = 'Mode Pengamat';
+                statusTag.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+                saveBtn.classList.add('hidden');
+                saveBtn.classList.remove('flex');
+                loginSec.classList.remove('hidden');
+                saveText.innerText = 'Mode Pengamat (Read-only)';
+            }
+        }
+
+        // --- CALENDAR & FILTER LOGIC ---
+        function populateMonthDropdown() {
+            const monthSelect = document.getElementById('filter-month');
+            monthSelect.innerHTML = '';
+            monthNamesList.forEach((m, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.innerText = m;
+                // Default to August (7) for testing 2026/2027 academic year start
+                if (idx === 7) opt.selected = true;
+                monthSelect.appendChild(opt);
+            });
+        }
+
+        function getTargetYear(academicYear, monthIndex) {
+            const parts = academicYear.split('/');
+            const startYr = parseInt(parts[0]);
+            const endYr = parseInt(parts[1]);
+            // July (6) to Dec (11) = Start Year. Jan (0) to June (5) = End Year.
+            return monthIndex >= 6 ? startYr : endYr;
+        }
+
+        // Calculate Monday-Friday workweeks strictly bound inside calendar month
+        function getWorkweeksInMonth(year, monthIndex) {
+            const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+            const weeks = [];
+            let currentWeek = [];
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, monthIndex, day);
+                const dayOfWeek = date.getDay(); // 0 = Sun, 6 = Sat
+
+                // Skip Saturday & Sunday
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    if (currentWeek.length > 0 && dayOfWeek === 0) {
+                        weeks.push(currentWeek);
+                        currentWeek = [];
+                    }
+                    continue;
+                }
+
+                // If Monday and we already started a week, finalize previous
+                if (dayOfWeek === 1 && currentWeek.length > 0) {
+                    weeks.push(currentWeek);
+                    currentWeek = [];
+                }
+
+                const dayName = dayNamesList[dayOfWeek];
+                const dateStr = `${dayName}, ${day} ${monthNamesList[monthIndex].substring(0, 3)}`;
+                const dateKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                currentWeek.push({
+                    dayName: dayName,
+                    dateFormatted: dateStr,
+                    key: dateKey,
+                    dayNum: day
+                });
+            }
+
+            if (currentWeek.length > 0) {
+                weeks.push(currentWeek);
+            }
+
+            return weeks;
+        }
+
+        function handleFilterChange() {
+            renderTable();
+            if (leaderboardScope) {
+                renderLeaderboard();
+            }
+        }
+
+        function validateRoomInput(input) {
+            if (input.value === '') return;
+            let val = parseInt(input.value);
+            if (val > 20) input.value = 20;
+            if (val < 1) input.value = 1;
+        }
+
+        function validateScoreInput(input) {
+            let val = parseInt(input.value);
+            if (isNaN(val)) {
+                input.value = '';
+                return;
+            }
+            if (val < 1) input.value = 1;
+            if (val > 20) input.value = 20;
+        }
+
+        // --- TABLE RENDERING & DATA BINDING ---
+        function renderTable() {
+            const acadYear = document.getElementById('filter-academic-year').value;
+            const monthIdx = parseInt(document.getElementById('filter-month').value);
+            const weekNum = parseInt(document.getElementById('filter-week').value);
+            const dorm = document.getElementById('filter-dorm').value;
+            const room = document.getElementById('filter-room').value || 1;
+
+            const calcYear = getTargetYear(acadYear, monthIdx);
+            const workweeks = getWorkweeksInMonth(calcYear, monthIdx);
+
+            // Select week or fallback to available
+            const activeWeekIdx = Math.min(weekNum - 1, workweeks.length - 1);
+            currentWorkweekDays = workweeks[activeWeekIdx] || [];
+
+            // Update title
+            document.getElementById('table-title').innerText = `Rekapitulasi: ${dorm} - Kamar ${room}`;
+            document.getElementById('table-subtitle').innerText = `Tahun ${acadYear} | Bulan ${monthNamesList[monthIdx]} | Minggu ke-${activeWeekIdx + 1} (${currentWorkweekDays.length} Hari Kerja Penilaian)`;
+
+            const tbody = document.getElementById('score-table-body');
+            tbody.innerHTML = '';
+
+            if (currentWorkweekDays.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400 font-medium">Tidak ada hari kerja efektif pada minggu ini.</td></tr>`;
+                calculateTotals();
+                return;
+            }
+
+            // Load saved data for this specific room key
+            const storageKey = `asramaku_data_${acadYear}_${monthIdx}_${activeWeekIdx}_${dorm}_kamar${room}`;
+            let savedData = {};
+            try {
+                const stored = localStorage.getItem(storageKey);
+                if (stored) savedData = JSON.parse(stored);
+            } catch (e) {}
+
+            currentWorkweekDays.forEach(item => {
+                const dayData = savedData[item.key] || { scores: {}, note: '' };
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition";
+
+                let html = `<td class="px-4 py-3 font-bold text-slate-700 dark:text-slate-300 text-center">${item.dateFormatted}</td>`;
+
+                // Aspect score inputs
+                aspects.forEach(aspect => {
+                    const val = dayData.scores[aspect] !== undefined ? dayData.scores[aspect] : '';
+                    const disabledAttr = !isAdminLoggedIn ? 'disabled' : '';
+                    
+                    html += `
+                        <td class="px-2 py-2.5 text-center">
+                            <input type="number" min="1" max="20" placeholder="-" value="${val}"
+                                class="score-input w-14 sm:w-16 p-1.5 text-center border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 font-extrabold text-slate-900 dark:text-white dark:bg-slate-800 disabled:bg-slate-100/80 dark:disabled:bg-slate-800/80 disabled:text-slate-900 dark:disabled:text-white disabled:opacity-100 cursor-default transition text-xs sm:text-sm" 
+                                data-daykey="${item.key}" data-aspect="${aspect}" 
+                                oninput="validateScoreInput(this); handleDataChange()" ${disabledAttr}>
+                        </td>
+                    `;
+                });
+
+                // Total daily score & note textarea
+                const disabledNote = !isAdminLoggedIn ? 'disabled' : '';
+                html += `
+                    <td class="px-4 py-3 text-center font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20 text-sm sm:text-base" id="total-${item.key}">0</td>
+                    <td class="px-4 py-2">
+                        <textarea class="note-input w-full p-2 text-xs border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 disabled:bg-slate-100/80 dark:disabled:bg-slate-800/80 disabled:text-slate-800 dark:disabled:text-slate-200 disabled:font-semibold disabled:opacity-100 cursor-default dark:bg-slate-800 dark:text-white outline-none transition resize-none" 
+                            rows="1" placeholder="Catatan perbaikan pembina..." 
+                            data-daykey="${item.key}" oninput="handleDataChange()" ${disabledNote}>${dayData.note || ''}</textarea>
+                    </td>
+                `;
+
+                tr.innerHTML = html;
+                tbody.appendChild(tr);
+            });
+
+            calculateTotals();
+        }
+
+        function handleDataChange() {
+            calculateTotals();
+            if (isAdminLoggedIn) {
+                // Auto-save on data change
+                saveScoresToStorage(true);
+            }
+        }
+
+        function calculateTotals() {
+            let weeklySum = 0;
+            let activeDaysCount = 0;
+
+            currentWorkweekDays.forEach(item => {
+                let dailySum = 0;
+                let hasInput = false;
+
+                aspects.forEach(aspect => {
+                    const input = document.querySelector(`.score-input[data-daykey="${item.key}"][data-aspect="${aspect}"]`);
+                    if (input && input.value !== '') {
+                        const val = parseInt(input.value) || 0;
+                        dailySum += val;
+                        hasInput = true;
+                    }
+                });
+
+                const totalEl = document.getElementById(`total-${item.key}`);
+                if (totalEl) {
+                    totalEl.innerText = dailySum;
+                }
+
+                if (hasInput) {
+                    weeklySum += dailySum;
+                    activeDaysCount++;
+                }
+            });
+
+            const avgEl = document.getElementById('weekly-average-score');
+            const predEl = document.getElementById('weekly-predicate-text');
+
+            if (activeDaysCount > 0) {
+                const avg = (weeklySum / activeDaysCount).toFixed(1);
+                avgEl.innerText = avg;
+
+                let pred = "Sangat Baik / Sempurna 🌟";
+                let predClass = "inline-block px-3 py-1 rounded-xl text-xs font-black bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800";
+                
+                if (avg < 50) {
+                    pred = "Sangat Kurang ⚠️";
+                    predClass = "inline-block px-3 py-1 rounded-xl text-xs font-black bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-200 border border-red-300 dark:border-red-800";
+                } else if (avg < 70) {
+                    pred = "Kurang / Perlu Perbaikan 🛠️";
+                    predClass = "inline-block px-3 py-1 rounded-xl text-xs font-black bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-800";
+                } else if (avg < 85) {
+                    pred = "Baik & Rapi 👍";
+                    predClass = "inline-block px-3 py-1 rounded-xl text-xs font-black bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-800";
+                }
+
+                predEl.innerText = `Predikat: ${pred}`;
+                predEl.className = predClass;
+            } else {
+                avgEl.innerText = "0";
+                predEl.innerText = "Predikat: Belum Ada Data";
+                predEl.className = "inline-block px-3 py-1 rounded-xl text-xs font-black bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400";
+            }
+        }
+
+        function saveScoresToStorage(isSilent = false) {
+            const acadYear = document.getElementById('filter-academic-year').value;
+            const monthIdx = parseInt(document.getElementById('filter-month').value);
+            const weekNum = parseInt(document.getElementById('filter-week').value);
+            const dorm = document.getElementById('filter-dorm').value;
+            const room = document.getElementById('filter-room').value || 1;
+
+            const calcYear = getTargetYear(acadYear, monthIdx);
+            const workweeks = getWorkweeksInMonth(calcYear, monthIdx);
+            const activeWeekIdx = Math.min(weekNum - 1, workweeks.length - 1);
+
+            const storageKey = `asramaku_data_${acadYear}_${monthIdx}_${activeWeekIdx}_${dorm}_kamar${room}`;
+            const dataToSave = {};
+
+            currentWorkweekDays.forEach(item => {
+                const dayScores = {};
+                aspects.forEach(aspect => {
+                    const input = document.querySelector(`.score-input[data-daykey="${item.key}"][data-aspect="${aspect}"]`);
+                    if (input && input.value !== '') {
+                        dayScores[aspect] = parseInt(input.value);
+                    }
+                });
+
+                const noteInput = document.querySelector(`.note-input[data-daykey="${item.key}"]`);
+                const noteVal = noteInput ? noteInput.value : '';
+
+                dataToSave[item.key] = {
+                    scores: dayScores,
+                    note: noteVal
+                };
+            });
+
+            // Save to LocalStorage
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+                if (!isSilent) {
+                    showToast('Data berhasil disimpan secara lokal!', 'success');
+                }
+            } catch (e) {
+                showToast('Gagal menyimpan ke memori lokal.', 'error');
+            }
+
+            // Sync to Google Sheets via Apps Script (if URL is set)
+            if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== "PASTE_URL_WEB_APP_DI_SINI") {
+                const recordsPayload = currentWorkweekDays.map(item => {
+                    const dayObj = dataToSave[item.key] || { scores: {}, note: '' };
+                    const s = dayObj.scores || {};
+                    let total = 0;
+                    aspects.forEach(asp => { total += (parseInt(s[asp]) || 0); });
+                    
+                    return {
+                        dateKey: item.key,
+                        dateFormatted: item.dateFormatted,
+                        kasur: s['kasur'] || 0,
+                        toilet: s['toilet'] || 0,
+                        lantai: s['lantai'] || 0,
+                        udara: s['udara'] || 0,
+                        tataLetak: s['tata_letak'] || 0,
+                        total: total,
+                        note: dayObj.note || ''
+                    };
+                });
+
+                const payload = {
+                    academicYear: acadYear,
+                    semester: document.getElementById('filter-semester').value === 'ganjil' ? 'Ganjil' : 'Genap',
+                    month: monthNamesList[monthIdx],
+                    week: activeWeekIdx + 1,
+                    dorm: dorm,
+                    room: parseInt(room),
+                    records: recordsPayload
+                };
+
+                fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(() => {
+                    if (!isSilent) showToast('Data tersinkron ke Google Sheets!', 'success');
+                }).catch(err => {
+                    console.error('Gagal sinkron ke Google Sheets:', err);
+                });
+            }
+        }
+
+        // --- LEADERBOARD LOGIC ---
+        function setLeaderboardScope(scope) {
+            leaderboardScope = scope;
+            const btnDorm = document.getElementById('btn-lb-dorm');
+            const btnSchool = document.getElementById('btn-lb-school');
+
+            if (scope === 'dorm') {
+                btnDorm.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-sm';
+                btnSchool.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+            } else {
+                btnSchool.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-sm';
+                btnDorm.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+            }
+
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const acadYear = document.getElementById('filter-academic-year').value;
+            const monthIdx = parseInt(document.getElementById('filter-month').value);
+            const weekNum = parseInt(document.getElementById('filter-week').value);
+            const currentDorm = document.getElementById('filter-dorm').value;
+
+            const calcYear = getTargetYear(acadYear, monthIdx);
+            const workweeks = getWorkweeksInMonth(calcYear, monthIdx);
+            const activeWeekIdx = Math.min(weekNum - 1, workweeks.length - 1);
+
+            const dormsList = leaderboardScope === 'dorm' 
+                ? [currentDorm] 
+                : ['Asrama 1 Putra', 'Asrama 1 Putri', 'Asrama 2 Putra', 'Asrama 2 Putri'];
+
+            const leaderboardData = [];
+
+            dormsList.forEach(dorm => {
+                for (let r = 1; r <= 20; r++) {
+                    const storageKey = `asramaku_data_${acadYear}_${monthIdx}_${activeWeekIdx}_${dorm}_kamar${r}`;
+                    try {
+                        const stored = localStorage.getItem(storageKey);
+                        if (stored) {
+                            const parsed = JSON.parse(stored);
+                            let totalSum = 0;
+                            let daysCount = 0;
+
+                            Object.keys(parsed).forEach(dateKey => {
+                                const dayObj = parsed[dateKey];
+                                if (dayObj && dayObj.scores) {
+                                    let dailySum = 0;
+                                    let hasVal = false;
+                                    Object.keys(dayObj.scores).forEach(asp => {
+                                        dailySum += parseInt(dayObj.scores[asp]) || 0;
+                                        hasVal = true;
+                                    });
+                                    if (hasVal) {
+                                        totalSum += dailySum;
+                                        daysCount++;
+                                    }
+                                }
+                            });
+
+                            const avgScore = daysCount > 0 ? parseFloat((totalSum / daysCount).toFixed(1)) : 0;
+                            if (avgScore > 0) {
+                                leaderboardData.push({
+                                    dorm: dorm,
+                                    room: r,
+                                    score: avgScore
+                                });
+                            }
+                        }
+                    } catch (e) {}
+                }
+            });
+
+            // Sort descending by score
+            leaderboardData.sort((a, b) => b.score - a.score);
+
+            // Update Podium
+            document.getElementById('pod-room-1').innerText = leaderboardData[0] ? `Kamar ${leaderboardData[0].room}` : 'Kamar -';
+            document.getElementById('pod-score-1').innerText = leaderboardData[0] ? `${leaderboardData[0].score} Poin` : '0 Poin';
+
+            document.getElementById('pod-room-2').innerText = leaderboardData[1] ? `Kamar ${leaderboardData[1].room}` : 'Kamar -';
+            document.getElementById('pod-score-2').innerText = leaderboardData[1] ? `${leaderboardData[1].score} Poin` : '0 Poin';
+
+            document.getElementById('pod-room-3').innerText = leaderboardData[2] ? `Kamar ${leaderboardData[2].room}` : 'Kamar -';
+            document.getElementById('pod-score-3').innerText = leaderboardData[2] ? `${leaderboardData[2].score} Poin` : '0 Poin';
+
+            // Populate Table (Top 10)
+            const tbody = document.getElementById('leaderboard-table-body');
+            tbody.innerHTML = '';
+
+            const top10 = leaderboardData.slice(0, 10);
+
+            if (top10.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400 font-medium">Belum ada data penilaian untuk periode ini.</td></tr>`;
+                return;
+            }
+
+            top10.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition";
+
+                let badge = `<span class="font-extrabold text-slate-600 dark:text-slate-400">#${index + 1}</span>`;
+                if (index === 0) badge = `<span class="text-base">🥇</span>`;
+                else if (index === 1) badge = `<span class="text-base">🥈</span>`;
+                else if (index === 2) badge = `<span class="text-base">🥉</span>`;
+
+                let statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">Sangat Bersih</span>`;
+                if (item.score < 50) statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-red-100 dark:bg-red-950 text-red-800 dark:text-red-300">Perlu Perhatian</span>`;
+                else if (item.score < 75) statusBadge = `<span class="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300">Cukup Rapi</span>`;
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-center">${badge}</td>
+                    <td class="px-4 py-3 font-extrabold text-slate-900 dark:text-white">Kamar ${item.room}</td>
+                    <td class="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 font-medium">${item.dorm}</td>
+                    <td class="px-4 py-3 text-center font-black text-emerald-700 dark:text-emerald-400 text-base">${item.score}</td>
+                    <td class="px-4 py-3 text-center">${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- UI HELPERS & UTILITIES ---
+        function switchTab(tab) {
+            const btnRekap = document.getElementById('tab-btn-rekap');
+            const btnLeaderboard = document.getElementById('tab-btn-leaderboard');
+            const contentRekap = document.getElementById('tab-content-rekap');
+            const contentLeaderboard = document.getElementById('tab-content-leaderboard');
+
+            if (tab === 'rekap') {
+                btnRekap.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 shadow-sm bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400';
+                btnLeaderboard.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+                contentRekap.classList.remove('hidden');
+                contentLeaderboard.classList.add('hidden');
+            } else {
+                btnLeaderboard.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 shadow-sm bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400';
+                btnRekap.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+                contentLeaderboard.classList.remove('hidden');
+                contentRekap.classList.add('hidden');
+                renderLeaderboard();
+            }
+        }
+
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                if (show) modal.classList.remove('hidden');
+                else modal.classList.add('hidden');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-slate-900 text-white border-slate-700';
+            let icon = 'fa-info-circle';
+            
+            if (type === 'success') {
+                bgClass = 'bg-emerald-700 text-white border-emerald-600';
+                icon = 'fa-check-circle';
+            } else if (type === 'error') {
+                bgClass = 'bg-red-700 text-white border-red-600';
+                icon = 'fa-exclamation-circle';
+            }
+
+            toast.className = `px-4 py-3 rounded-2xl border shadow-xl text-xs font-bold flex items-center gap-2 transform transition-all duration-300 translate-x-10 opacity-0 pointer-events-auto ${bgClass}`;
+            toast.innerHTML = `<i class="fas ${icon} text-sm"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => { toast.classList.remove('translate-x-10', 'opacity-0'); }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-x-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
