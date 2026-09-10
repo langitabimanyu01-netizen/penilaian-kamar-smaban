@@ -1055,9 +1055,106 @@
             setTimeout(() => { toast.classList.remove('translate-x-10', 'opacity-0'); }, 10);
             setTimeout(() => {
                 toast.classList.add('translate-x-10', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-    </script>
+      <!-- =================================================== -->
+<!-- FIREBASE BACKEND SCRIPT - ASRAMAKU                   -->
+<!-- =================================================== -->
+<script type="module">
+  // 1. Import library Firebase Cloud Firestore (v10 CDN)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    onSnapshot, 
+    query, 
+    orderBy 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // 2. TATA KODE FIREBASECONFIG KAMU DI SINI
+  // (Ganti nilai di dalam tanda petik dengan data dari Firebase Console -> Project Settings)
+  const firebaseConfig = {
+    apiKey: "AIzaSyAPxE0-Umd7RP8MpM-NRqzYdkWFHdX3fZQ",
+    authDomain: "asramaku-banua.firebaseapp.com",
+    projectId: "asramaku-banua",
+    storageBucket: "asramaku-banua.firebasestorage.app",
+    messagingSenderId: "354291524387",
+    appId: "1:354291524387:web:6223894de9b38a08fd6296"
+  };
+
+  // 3. Inisialisasi Firebase & Firestore
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ===================================================
+  // FUNGSI 1: SIMPAN DATA PENILAIAN (PENGURUS)
+  // ===================================================
+  window.simpanKeFirebase = async function(event) {
+    if (event) event.preventDefault(); // Mencegah form reload otomatis
+
+    // Ambil nilai dari elemen input HTML
+    const dataInput = {
+      timestamp: new Date(),
+      asrama: document.getElementById("selectAsrama") ? document.getElementById("selectAsrama").value : "Asrama 1",
+      kamar: document.getElementById("inputKamar") ? document.getElementById("inputKamar").value : "",
+      minggu: document.getElementById("selectMinggu") ? document.getElementById("selectMinggu").value : "1",
+      
+      // 5 Aspek Penilaian (Skala 1-20)
+      kasur: Number(document.getElementById("inputKasur")?.value || 0),
+      toilet: Number(document.getElementById("inputToilet")?.value || 0),
+      lantai: Number(document.getElementById("inputLantai")?.value || 0),
+      udara: Number(document.getElementById("inputUdara")?.value || 0),
+      tataLetak: Number(document.getElementById("inputTataLetak")?.value || 0),
+      
+      catatan: document.getElementById("inputCatatan")?.value || ""
+    };
+
+    // Hitung Total Skor Otomatis (Skala 100)
+    dataInput.totalSkor = dataInput.kasur + dataInput.toilet + dataInput.lantai + dataInput.udara + dataInput.tataLetak;
+
+    // Validasi sederhana
+    if (!dataInput.kamar) {
+      alert("Mohon isi nomor kamar terlebih dahulu!");
+      return;
+    }
+
+    try {
+      // Kirim data ke koleksi "penilaian_kamar" di Firestore
+      const docRef = await addDoc(collection(db, "penilaian_kamar"), dataInput);
+      alert(`Data Kamar ${dataInput.kamar} berhasil tersimpan ke Cloud Firestore!`);
+      
+      // Reset form setelah simpan (jika ada form)
+      const formElement = document.getElementById("formPenilaian");
+      if (formElement) formElement.reset();
+
+    } catch (error) {
+      console.error("Gagal menyimpan ke Firebase:", error);
+      alert("Gagal menyimpan data: " + error.message);
+    }
+  };
+
+  // ===================================================
+  // FUNGSI 2: BACA DATA REAL-TIME (PENGAMAT / SISWA)
+  // ===================================================
+  // Mengurutkan data berdasarkan waktu terbaru
+  const q = query(collection(db, "penilaian_kamar"), orderBy("timestamp", "desc"));
+
+  onSnapshot(q, (snapshot) => {
+    const listPenilaian = [];
+    
+    snapshot.forEach((doc) => {
+      listPenilaian.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    console.log("Data Real-Time Firestore Terupdate:", listPenilaian);
+
+    // Kirim data ke fungsi pembuat tabel/leaderboard di HTML kamu (jika ada)
+    if (typeof updateTabelUI === "function") {
+      updateTabelUI(listPenilaian);
+    }
+  });
+</script>
 </body>
 </html>
